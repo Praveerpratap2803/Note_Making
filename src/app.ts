@@ -40,6 +40,7 @@ app.post("/createNote", async (req: Request, res: Response) => {
 app.get(
   "/getAllNotesByUserId/:user_id",
   async (req: Request, res: Response) => {
+    try{
     let user_id: string = req.params.user_id;
     let usersData = await db.user.findUnique({
       where: {
@@ -60,10 +61,14 @@ app.get(
     return res
       .status(200)
       .json({ message: "Fetched List of Note successfully", data: allNotes });
+    } catch (error) {
+      res.json({ message: "Server Error" });
+    }
   }
 );
 
 app.put("/updateNote", async (req: Request, res: Response) => {
+  try{
   let NoteData: Note = req.body;
   let { id, note_message, user_id } = NoteData;
 
@@ -97,9 +102,13 @@ app.put("/updateNote", async (req: Request, res: Response) => {
   return res
     .status(200)
     .json({ message: "Note updated successfully", data: updatedNote });
+  } catch (error) {
+    res.json({ message: "Server Error" });
+  }
 });
 
 app.get("/getNoteById/:id", async (req: Request, res: Response) => {
+  try{
   let id: string = req.params.id;
   let data = await db.note.findUnique({
     where: {
@@ -110,9 +119,13 @@ app.get("/getNoteById/:id", async (req: Request, res: Response) => {
     return res.status(200).json({ message: "Data not found", id });
   }
   return res.status(200).json({ message: "Fetched note successfully", data });
+} catch (error) {
+  res.json({ message: "Server Error" });
+}
 });
 
 app.delete("/deleteNote/:id", async (req: Request, res: Response) => {
+  try{
   let id: string = req.params.id;
   let data = await db.note.findUnique({
     where: {
@@ -129,6 +142,9 @@ app.delete("/deleteNote/:id", async (req: Request, res: Response) => {
     },
   });
   return res.status(200).json({ message: "Note deleted successfully" });
+} catch (error) {
+  res.json({ message: "Server Error" });
+}
 });
 
 app.listen(port, () => {
