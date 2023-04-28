@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE "Note" ALTER COLUMN "created_by" DROP NOT NULL,
+ALTER COLUMN "modified_by" DROP NOT NULL,
+ALTER COLUMN "deleted_by" DROP NOT NULL,
+ALTER COLUMN "deleted_on" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "created_by" DROP NOT NULL,
+ALTER COLUMN "modified_by" DROP NOT NULL,
+ALTER COLUMN "deleted_by" DROP NOT NULL,
+ALTER COLUMN "deleted_on" DROP NOT NULL;
