@@ -10,30 +10,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Favorite {
+  Yes
+  No
+}
+
 model User {
-  id          String      @id @default(uuid())
+  id          String    @id @default(uuid())
   username    String
   password    String
   first_name  String
   last_name   String?
   created_by  String?
-  created_on  DateTime @default(now())
+  created_on  DateTime  @default(now())
   modified_by String?
-  modified_on DateTime @updatedAt
+  modified_on DateTime  @updatedAt
   deleted_by  String?
   deleted_on  DateTime?
   note        Note[]
 }
 
 model Note {
-  id           String      @id @default(uuid())
+  id           String    @id @default(uuid())
   note_message String
+  favorite     Favorite @default(No)
   user_id      String
   created_by   String?
-  created_on   DateTime @default(now())
+  created_on   DateTime  @default(now())
   modified_by  String?
-  modified_on  DateTime @updatedAt
+  modified_on  DateTime  @updatedAt
   deleted_by   String?
   deleted_on   DateTime?
-  user_ref     User     @relation(fields: [user_id], references: [id])
+  user_ref     User      @relation(fields: [user_id], references: [id])
 }
