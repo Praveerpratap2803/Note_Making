@@ -32,7 +32,7 @@ app.post("/login",async (req,res)=>{
     console.log(error);
   }
 })
-app.post("/createNote",checkingTokenPresent, async (req: Request, res: Response) => {
+app.post("/createNote", async (req: Request, res: Response) => {
   try {
     let NoteData: Note = req.body;
     console.log(NoteData);
@@ -61,7 +61,7 @@ app.post("/createNote",checkingTokenPresent, async (req: Request, res: Response)
 
 
 app.get(
-  "/getAllNotesByUserId/:user_id",checkingTokenPresent,
+  "/getAllNotesByUserId/:user_id",
   async (req: Request, res: Response) => {
     try {
       let user_id: string = req.params.user_id;
@@ -101,7 +101,7 @@ app.get(
   }
 );
 
-app.put("/updateNote",checkingTokenPresent, async (req: Request, res: Response) => {
+app.put("/updateNote", async (req: Request, res: Response) => {
   try {
     let NoteData: Note = req.body;
     let { id, note_message, user_id } = NoteData;
@@ -141,7 +141,7 @@ app.put("/updateNote",checkingTokenPresent, async (req: Request, res: Response) 
   }
 });
 
-app.get("/getNoteById/:id",checkingTokenPresent, async (req: Request, res: Response) => {
+app.get("/getNoteById/:id", async (req: Request, res: Response) => {
   try {
     let id: string = req.params.id;
     let data = await db.note.findUnique({
@@ -158,7 +158,7 @@ app.get("/getNoteById/:id",checkingTokenPresent, async (req: Request, res: Respo
   }
 });
 
-app.delete("/deleteNote/:id",checkingTokenPresent, async (req: Request, res: Response) => {
+app.delete("/deleteNote/:id", async (req: Request, res: Response) => {
   try {
     let id: string = req.params.id;
     let data = await db.note.findUnique({
@@ -181,7 +181,7 @@ app.delete("/deleteNote/:id",checkingTokenPresent, async (req: Request, res: Res
   }
 });
 
-app.put("/updateFavouriteTagById",checkingTokenPresent, async (req: Request, res: Response) => {
+app.put("/updateFavouriteTagById", async (req: Request, res: Response) => {
   const favouriteTagData: Note = req.body;
   let { favorite, id } = favouriteTagData;
   let favouriteTag:Note = await db.note.update({
@@ -199,7 +199,7 @@ app.put("/updateFavouriteTagById",checkingTokenPresent, async (req: Request, res
 });
 
 app.get(
-  "/getAllFavoriteNotesByUserId/:user_id",checkingTokenPresent,
+  "/getAllFavoriteNotesByUserId/:user_id",
   async (req: Request, res: Response) => {
     let user_id:string = req.params.user_id;
 
