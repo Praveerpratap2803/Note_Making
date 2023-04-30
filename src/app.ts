@@ -1,18 +1,38 @@
-// import { Note } from "@prisma/client";
-import { Note } from "./Interface";
+import { Note,User } from "./Interface";
 import express from "express";
 import { Request, Response } from "express";
 import { db } from "./dataBase";
 import cors from "cors";
 import checkAdmin from "./checkAdmin";
-
+import jwt from 'jsonwebtoken';
+import checkingTokenPresent from "./checkingTokenPresent";
 const app = express();
 const port = 3000;
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+app.post("/login",async (req,res)=>{
+  try {
+    let user:User = req.body;
+    let {username,password} = user
+    let userData = await db.user.findFirst({
+      where:{
+        username,
+      }
+    })
 
-app.post("/createNote", async (req: Request, res: Response) => {
+    if(!userData || userData.password!==password){
+      return res.status(200).json({message:"Incorrect username or password"})
+    }
+    const secretKey = 'praveer';
+    const token = jwt.sign(userData,secretKey);
+    let decoded = jwt.verify(token,secretKey);
+    return res.status(200).json({message:"login in successfully",data:{token,...userData}})
+  } catch (error) {
+    console.log(error);
+  }
+})
+app.post("/createNote",checkingTokenPresent, async (req: Request, res: Response) => {
   try {
     let NoteData: Note = req.body;
     console.log(NoteData);
@@ -41,7 +61,7 @@ app.post("/createNote", async (req: Request, res: Response) => {
 
 
 app.get(
-  "/getAllNotesByUserId/:user_id",
+  "/getAllNotesByUserId/:user_id",checkingTokenPresent,
   async (req: Request, res: Response) => {
     try {
       let user_id: string = req.params.user_id;
@@ -55,6 +75,7 @@ app.get(
           .status(200)
           .json({ message: "Data not found", data: user_id });
       }
+      
       const isAdmin = await checkAdmin(user_id);
       if(isAdmin.length){
         let allNotesAdmin = await db.note.findMany({});
@@ -62,6 +83,7 @@ app.get(
         .status(200)
         .json({ message: "Super Admin Fetched List of Note successfully", data: allNotesAdmin });
       }
+
       let allNotes: Note[] = await db.note.findMany({
         orderBy: {
           modified_on: "desc",
@@ -79,7 +101,7 @@ app.get(
   }
 );
 
-app.put("/updateNote", async (req: Request, res: Response) => {
+app.put("/updateNote",checkingTokenPresent, async (req: Request, res: Response) => {
   try {
     let NoteData: Note = req.body;
     let { id, note_message, user_id } = NoteData;
@@ -119,7 +141,7 @@ app.put("/updateNote", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/getNoteById/:id", async (req: Request, res: Response) => {
+app.get("/getNoteById/:id",checkingTokenPresent, async (req: Request, res: Response) => {
   try {
     let id: string = req.params.id;
     let data = await db.note.findUnique({
@@ -136,7 +158,7 @@ app.get("/getNoteById/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.delete("/deleteNote/:id", async (req: Request, res: Response) => {
+app.delete("/deleteNote/:id",checkingTokenPresent, async (req: Request, res: Response) => {
   try {
     let id: string = req.params.id;
     let data = await db.note.findUnique({
@@ -159,7 +181,7 @@ app.delete("/deleteNote/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.put("/updateFavouriteTagById", async (req: Request, res: Response) => {
+app.put("/updateFavouriteTagById",checkingTokenPresent, async (req: Request, res: Response) => {
   const favouriteTagData: Note = req.body;
   let { favorite, id } = favouriteTagData;
   let favouriteTag:Note = await db.note.update({
@@ -177,7 +199,7 @@ app.put("/updateFavouriteTagById", async (req: Request, res: Response) => {
 });
 
 app.get(
-  "/getAllFavoriteNotesByUserId/:user_id",
+  "/getAllFavoriteNotesByUserId/:user_id",checkingTokenPresent,
   async (req: Request, res: Response) => {
     let user_id:string = req.params.user_id;
 
