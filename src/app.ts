@@ -6,6 +6,7 @@ import cors from "cors";
 import checkAdmin from "./checkAdmin";
 import jwt from 'jsonwebtoken';
 import checkingTokenPresent from "./checkingTokenPresent";
+import userChecking from "./jwtToken";
 const app = express();
 const port = 3000;
 
@@ -22,7 +23,7 @@ app.post("/login",async (req,res)=>{
     })
 
     if(!userData || userData.password!==password){
-      return res.status(200).json({message:"Incorrect username or password"})
+      return res.status(400).json({message:"Incorrect username or password"})
     }
     const secretKey = 'praveer';
     const token = jwt.sign(userData,secretKey);
@@ -64,6 +65,8 @@ app.get(
   "/getAllNotesByUserId/:user_id",
   async (req: Request, res: Response) => {
     try {
+      // let data = userChecking(req,res);
+      // console.log(data.first_name);
       let user_id: string = req.params.user_id;
       let usersData = await db.user.findUnique({
         where: {
@@ -75,7 +78,12 @@ app.get(
           .status(200)
           .json({ message: "Data not found", data: user_id });
       }
-      
+      // if(data.first_name==='Super Admin'){
+      //   let allNotesAdmin = await db.note.findMany({});
+      //   return res
+      //   .status(200)
+      //   .json({ message: "Super Admin Fetched List of Note successfully", data: allNotesAdmin });
+      // }
       const isAdmin = await checkAdmin(user_id);
       if(isAdmin.length){
         let allNotesAdmin = await db.note.findMany({});
