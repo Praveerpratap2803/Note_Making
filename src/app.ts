@@ -1,4 +1,4 @@
-import { Note,User } from "./Interface";
+import { Note,Priority,User } from "./Interface";
 import express from "express";
 import { Request, Response } from "express";
 import { db } from "./dataBase";
@@ -9,7 +9,6 @@ import checkingTokenPresent from "./checkingTokenPresent";
 import userChecking from "./jwtToken";
 const app = express();
 const port = 3000;
-
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.post("/login",async (req,res)=>{
@@ -112,9 +111,9 @@ app.get(
 app.put("/updateNote", async (req: Request, res: Response) => {
   try {
     let NoteData: Note = req.body;
-    let { id, note_message, user_id } = NoteData;
+    let { id, note_message, user_id,count_priority,end_date,start_date,created_on } = NoteData;
 
-    let noteData = await db.note.findUnique({
+    let noteData:Note|null = await db.note.findUnique({
       where: {
         id,
       },
@@ -132,18 +131,40 @@ app.put("/updateNote", async (req: Request, res: Response) => {
         .status(200)
         .json({ message: "Data not found", user_id: user_id });
     }
+    let isAdmin = await checkAdmin(user_id)
+    if(isAdmin.length){
+      console.log("updating admin");
+      let created_on1 = new Date(created_on)
+      let adminUpdateNote = await db.note.update({
+        where:{
+          id,
+        },
+        data:{
+          note_message, 
+          start_date,
+          end_date,
+          created_on:created_on1, 
+          count_edit:noteData.count_edit+1
+        },
+      })
+      return res
+      .status(200)
+      .json({ message: "Note updated successfully", data: adminUpdateNote });
+    }else{
+
     let updatedNote: Note = await db.note.update({
       where: {
         id,
       },
       data: {
         note_message,
-        user_id,
+        count_edit:noteData.count_edit+1
       },
     });
     return res
       .status(200)
       .json({ message: "Note updated successfully", data: updatedNote });
+  }
   } catch (error) {
     res.json({ message: "Server Error" });
   }
@@ -241,6 +262,81 @@ app.get(
       .json({ message: "Fetched Favorite Notes Successfully", data:favoriteNotes });
   }
 );
+app.post('/createPriority',async(req:Request,res:Response)=>{
+  const priorityData:Priority = req.body;
+  const {priority,note_id} = priorityData;
+  let data = await db.note.findUnique({
+    where: {
+      id:note_id,
+    },
+  });
+  if (!data) {
+    return res.status(200).json({ message: "Data not found", note_id });
+  }
+  let priorityCreated = await db.priority.create({
+      data:{
+        note_id,
+        priority
+      }
+  })
+  let updateCount = await db.note.update({
+    where:{
+      id:note_id,
+    },
+    data:{
+      count_priority:data.count_priority+1
+    }
+  })
+  return res.status(201).json({message:"Priority created successfully",data:priorityCreated})
+})
+app.get('/getPriorityByNoteId/:note_id',async(req:Request,res:Response)=>{
+  let note_id = req.params.note_id
+  let data = await db.note.findUnique({
+    where: {
+      id:note_id,
+    },
+  });
+  if (!data) {
+    return res.status(200).json({ message: "Data not found", note_id });
+  }
+  let priorityData = await db.priority.findFirst({
+    orderBy:{
+      modified_on:'desc'
+    },
+    where:{
+      note_id
+    }
+  })
+  if(!priorityData){
+    return res.status(200).json({message:"Data not found"});
+  }
+  return res.status(200).json({message:"Fetched priority",data:priorityData})
+})
+app.get('/getLastFivePrioritiesByNoteId/:note_id',async(req:Request,res:Response)=>{
+  let note_id = req.params.note_id
+  let data = await db.note.findUnique({
+    where: {
+      id:note_id,
+    },
+  });
+  if (!data) {
+    return res.status(200).json({ message: "Data not found", note_id });
+  }
+  let priorityData = await db.priority.findMany({
+    orderBy:{
+      modified_on:'desc'
+    },
+    where:{
+      note_id
+    },
+    take:5,
+  })
+  if(!priorityData){
+    return res.status(200).json({message:"Data not found"});
+  }
+  return res.status(200).json({message:"Fetched priority",data:priorityData})
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });

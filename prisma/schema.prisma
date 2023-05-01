@@ -31,15 +31,32 @@ model User {
 }
 
 model Note {
-  id           String    @id @default(uuid())
-  note_message String
-  favorite     Favorite @default(No)
-  user_id      String
-  created_by   String?
-  created_on   DateTime  @default(now())
-  modified_by  String?
-  modified_on  DateTime  @updatedAt
-  deleted_by   String?
-  deleted_on   DateTime?
-  user_ref     User      @relation(fields: [user_id], references: [id])
+  id             String     @id @default(uuid())
+  note_message   String
+  favorite       Favorite   @default(No)
+  start_date     String?
+  end_date       String?
+  count_edit     Int        @default(0)
+  count_priority Int        @default(0)
+  user_id        String
+  created_by     String?
+  created_on     DateTime   @default(now())
+  modified_by    String?
+  modified_on    DateTime   @updatedAt
+  deleted_by     String?
+  deleted_on     DateTime?
+  user_ref       User       @relation(fields: [user_id], references: [id] , onDelete: Cascade)
+  priority       Priority[]
+}
+
+model Priority {
+  id          String    @id @default(uuid())
+  priority    Int
+  note_id     String
+  created_on  DateTime  @default(now())
+  modified_by String?
+  modified_on DateTime  @updatedAt
+  deleted_by  String?
+  deleted_on  DateTime?
+  note_ref    Note      @relation(fields: [note_id], references: [id], onDelete: Cascade) 
 }
