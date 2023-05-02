@@ -31,12 +31,12 @@ app.post("/login",async (req,res)=>{
     console.log(error);
   }
 })
-app.post("/createNote", async (req: Request, res: Response) => {
+app.post("/createNote",checkingTokenPresent, async (req: Request, res: Response) => {
   try {
     let NoteData: Note = req.body;
     console.log(NoteData);
-    // let user = userChecking(req,res);
-    // console.log(user.id);
+    let user = userChecking(req,res);
+    console.log("user id from the jwt token",user.id);
     let { note_message, user_id } = NoteData;
     let usersData = await db.user.findUnique({
       where: {
