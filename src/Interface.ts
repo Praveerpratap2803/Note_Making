@@ -11,12 +11,26 @@ export interface Note{
     created_on:Date;
 }
 export interface User{
+    id:string;
     username:string;
     password:string;
     first_name:string;
+    last_name: string | null;
+    created_by: string | null;
+    created_on: Date;
+    modified_by: string | null;
+    modified_on: Date;
+    deleted_by: string | null;
+    deleted_on: Date | null;
 }
 export interface Priority{
     id:string;
     priority:number;
     note_id:string;
+}
+export interface Priority1{
+    id:string;
+    priority:number;
+    note_id:string;
+    user_id:string;
 }

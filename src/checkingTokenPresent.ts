@@ -1,5 +1,4 @@
 import { Request,Response,NextFunction } from "express";
-import jwt from 'jsonwebtoken'
 const checkingTokenPresent = (req:Request,res:Response,next:NextFunction)=>{
     let token = req.headers.authorization;
     if(!token){

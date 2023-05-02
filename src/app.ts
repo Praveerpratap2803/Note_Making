@@ -1,4 +1,4 @@
-import { Note,Priority,User } from "./Interface";
+import { Note,Priority,Priority1,User } from "./Interface";
 import express from "express";
 import { Request, Response } from "express";
 import { db } from "./dataBase";
@@ -26,7 +26,6 @@ app.post("/login",async (req,res)=>{
     }
     const secretKey = 'praveer';
     const token = jwt.sign(userData,secretKey);
-    let decoded = jwt.verify(token,secretKey);
     return res.status(200).json({message:"login in successfully",data:{token,...userData}})
   } catch (error) {
     console.log(error);
@@ -36,6 +35,8 @@ app.post("/createNote", async (req: Request, res: Response) => {
   try {
     let NoteData: Note = req.body;
     console.log(NoteData);
+    // let user = userChecking(req,res);
+    // console.log(user.id);
     let { note_message, user_id } = NoteData;
     let usersData = await db.user.findUnique({
       where: {
@@ -132,7 +133,7 @@ app.put("/updateNote", async (req: Request, res: Response) => {
         .json({ message: "Data not found", user_id: user_id });
     }
     let isAdmin = await checkAdmin(user_id)
-    if(isAdmin.length){
+    if(isAdmin.length && (start_date|| end_date||created_on)){
       console.log("updating admin");
       let created_on1 = new Date(created_on)
       let adminUpdateNote = await db.note.update({
@@ -263,8 +264,13 @@ app.get(
   }
 );
 app.post('/createPriority',async(req:Request,res:Response)=>{
-  const priorityData:Priority = req.body;
-  const {priority,note_id} = priorityData;
+  const priorityData:Priority1 = req.body;
+  // const {priority,note_id} = priorityData;
+  const {priority,note_id,user_id} = priorityData;
+  let isAdmin = await checkAdmin(user_id);
+  if(!isAdmin.length){
+    return res.status(200).json({message:"Not allowed",user_id:user_id})
+  }
   let data = await db.note.findUnique({
     where: {
       id:note_id,
